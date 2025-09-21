@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>To-Do List App</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center p-4">
+<div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 transition hover:shadow-3xl">
+  <h2 class="text-2xl font-bold text-blue-900 flex items-center gap-2 mb-6">
+    To-Do List 
+    <img src="https://cdn-icons-png.freepik.com/256/14203/14203821.png?semt=ais_hybrid" alt="todo-icon" class="w-8"/>
+  </h2>
+
+    <div class="flex items-center bg-gray-100 rounded-full px-4 mb-6 shadow-inner focus-within:ring-2 focus-within:ring-purple-400">
+
+    <input 
+      type="text" 
+      id="input-box" 
+      placeholder="Add your task..." 
+      class="flex-1 bg-transparent outline-none py-3 px-2 text-gray-700 text-base"
+    />
+    <button 
+      onclick="addTask()" 
+      class="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-6 py-2 rounded-full font-semibold transition shadow-md">
+      Add
+    </button>
+  </div>
+  <ul id="list-container" class="space-y-2"></ul>
+
+  <div id="task-count" class="mt-3 text-sm text-gray-600"></div>
+  <button 
+    onclick="clearAll()" 
+    class="bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white px-4 py-2 mt-4 rounded-lg shadow-md">
+    Clear All
+  </button>
+</div>
+
+<script>
+  const inputbox = document.getElementById("input-box");
+  const listcontainer = document.getElementById("list-container");
+
+  function addTask() {
+    if (inputbox.value.trim() === '') {
+      alert("You must write something!");
+    } else {
+      let li = document.createElement("li");
+      li.className = "flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl shadow-sm hover:shadow-md transition cursor-pointer";
+
+      let spanText = document.createElement("span");
+      spanText.innerText = inputbox.value;
+      spanText.className = "text-gray-700";
+      li.appendChild(spanText);
+
+      let delBtn = document.createElement("span");
+      delBtn.innerHTML = "&#10006;";
+      delBtn.className = "w-7 h-7 flex items-center justify-center rounded-full bg-purple-200 text-purple-700 hover:bg-purple-400 hover:text-white transition ml-4";
+      li.appendChild(delBtn);
+
+      listcontainer.appendChild(li);
+    }
+
+    inputbox.value = "";
+    savedata();
+    updateTaskCount();
+  }
+
+  inputbox.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      addTask();
+    }
+  });
+
+  listcontainer.addEventListener("click", function (e) {
+    if (e.target.tagName === "SPAN" && e.target.innerHTML === "✖") {
+      e.target.parentElement.remove();
+    } else if (e.target.tagName === "SPAN") {
+      e.target.classList.toggle("line-through");
+      e.target.classList.toggle("text-gray-500");
+    }
+    savedata();
+    updateTaskCount();
+  });
+
+
+  function savedata() {
+let tasks = [];
+listcontainer.querySelectorAll("li").forEach(li => {
+  let text = li.querySelector("span").innerText;
+  let completed = li.querySelector("span").classList.contains("line-through");
+  tasks.push({ text, completed });
+});
+localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function showTask() {
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+listcontainer.innerHTML = "";
+tasks.forEach(task => {
+  let li = document.createElement("li");
+  li.className = "flex items-center justify-between bg-gray-100 px-4 py-2 rounded-lg cursor-pointer";
+
+  let spanText = document.createElement("span");
+  spanText.innerText = task.text;
+  spanText.className = "text-gray-700";
+  if (task.completed) {
+    spanText.classList.add("line-through", "text-gray-500");
+  }
+  li.appendChild(spanText);
+
+  let delBtn = document.createElement("span");
+  delBtn.innerHTML = "&#10006;";
+  delBtn.className = "text-gray-500 hover:text-red-500 cursor-pointer ml-4";
+  li.appendChild(delBtn);
+
+  listcontainer.appendChild(li);
+});
+updateTaskCount();
+}
+
+
+  function clearAll() {
+    listcontainer.innerHTML = "";
+    savedata();
+    updateTaskCount();
+  }
+
+  function updateTaskCount() {
+    const tasks = listcontainer.querySelectorAll("li");
+    const completed = listcontainer.querySelectorAll("span.line-through").length;
+    document.getElementById("task-count").innerText =
+      `Total: ${tasks.length} | Completed: ${completed}`;
+  }
+
+  showTask();
+</script>
+</body>
+</html>
